@@ -1419,7 +1419,9 @@ defmodule BorsNG.Worker.BatcherTest do
            }
   end
 
-  test "waits for an patch with a request for changes even if it also has approvals", %{proj: proj} do
+  test "waits for an patch with a request for changes even if it also has approvals", %{
+    proj: proj
+  } do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
