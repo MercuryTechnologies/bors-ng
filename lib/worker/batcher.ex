@@ -761,7 +761,12 @@ defmodule BorsNG.Worker.Batcher do
       {:squash} ->
         Enum.each(patches, fn patch ->
           pr = GitHub.get_pr!(repo_conn, patch.pr_xref)
-          GitHub.squash_merge_branch!(repo_conn, %{ pull_number: pr.number, commit_title: patch.title, commit_message: patch.body })
+
+          GitHub.squash_merge_branch!(repo_conn, %{
+            pull_number: pr.number,
+            commit_title: patch.title,
+            commit_message: patch.body
+          })
         end)
 
         :ok
