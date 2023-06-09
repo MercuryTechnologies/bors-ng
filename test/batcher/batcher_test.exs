@@ -374,7 +374,7 @@ defmodule BorsNG.Worker.BatcherTest do
            }
   end
 
-  test "rejects a patch with a bad PR status", %{proj: proj} do
+  test "waits for a patch with a bad PR status", %{proj: proj} do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
@@ -402,7 +402,7 @@ defmodule BorsNG.Worker.BatcherTest do
                branches: %{},
                commits: %{},
                comments: %{
-                 1 => [":-1: Rejected by PR status"]
+                 1 => [":clock1: Waiting for the PR to be ready to merge."]
                },
                statuses: %{"Z" => %{"cn" => :error}},
                files: %{"Z" => %{"bors.toml" => ~s/status = [ "ci" ]\npr_status = [ "cn" ]/}}
@@ -500,7 +500,7 @@ defmodule BorsNG.Worker.BatcherTest do
            }
   end
 
-  test "rejects a patch with missing require reviewers", %{proj: proj} do
+  test "waits for a patch with missing required reviewers", %{proj: proj} do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
@@ -580,7 +580,7 @@ defmodule BorsNG.Worker.BatcherTest do
                  }
                },
                comments: %{
-                 1 => [":-1: Rejected because of missing code owner approval"]
+                 1 => [":clock1: Waiting for the PR to be ready to merge."]
                },
                statuses: %{"Z" => %{"cn" => :ok}},
                files: %{
@@ -605,7 +605,7 @@ defmodule BorsNG.Worker.BatcherTest do
     assert [] == Repo.all(Batch)
   end
 
-  test "rejects a patch with missing require reviewers - path docs/CODEOWNERS", %{proj: proj} do
+  test "waits for a patch with missing required reviewers - path docs/CODEOWNERS", %{proj: proj} do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
@@ -685,7 +685,7 @@ defmodule BorsNG.Worker.BatcherTest do
                  }
                },
                comments: %{
-                 1 => [":-1: Rejected because of missing code owner approval"]
+                 1 => [":clock1: Waiting for the PR to be ready to merge."]
                },
                statuses: %{"Z" => %{"cn" => :ok}},
                files: %{
@@ -710,7 +710,7 @@ defmodule BorsNG.Worker.BatcherTest do
     assert [] == Repo.all(Batch)
   end
 
-  test "rejects a patch with missing require reviewers - path CODEOWNERS", %{proj: proj} do
+  test "waits for a patch with missing required reviewers - path CODEOWNERS", %{proj: proj} do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
@@ -790,7 +790,7 @@ defmodule BorsNG.Worker.BatcherTest do
                  }
                },
                comments: %{
-                 1 => [":-1: Rejected because of missing code owner approval"]
+                 1 => [":clock1: Waiting for the PR to be ready to merge."]
                },
                statuses: %{"Z" => %{"cn" => :ok}},
                files: %{
@@ -815,7 +815,7 @@ defmodule BorsNG.Worker.BatcherTest do
     assert [] == Repo.all(Batch)
   end
 
-  test "rejects a patch with missing require reviewers - using prefix in CODEOWNERS", %{
+  test "waits for a patch missing required reviewers - using prefix in CODEOWNERS", %{
     proj: proj
   } do
     GitHub.ServerMock.put_state(%{
@@ -900,7 +900,7 @@ defmodule BorsNG.Worker.BatcherTest do
                  }
                },
                comments: %{
-                 1 => [":-1: Rejected because of missing code owner approval"]
+                 1 => [":clock1: Waiting for the PR to be ready to merge."]
                },
                statuses: %{"Z" => %{"cn" => :ok}},
                files: %{
@@ -928,7 +928,7 @@ defmodule BorsNG.Worker.BatcherTest do
     assert [] == Repo.all(Batch)
   end
 
-  test "rejects a patch with missing require reviewers - using wildcard in CODEOWNERS", %{
+  test "waits for a patch with missing required reviewers - using wildcard in CODEOWNERS", %{
     proj: proj
   } do
     GitHub.ServerMock.put_state(%{
@@ -1010,7 +1010,7 @@ defmodule BorsNG.Worker.BatcherTest do
                  }
                },
                comments: %{
-                 1 => [":-1: Rejected because of missing code owner approval"]
+                 1 => [":clock1: Waiting for the PR to be ready to merge."]
                },
                statuses: %{"Z" => %{"cn" => :ok}},
                files: %{
@@ -1035,7 +1035,7 @@ defmodule BorsNG.Worker.BatcherTest do
     assert [] == Repo.all(Batch)
   end
 
-  test "Poll on a pending (waiting) PR status. Then reject after that CI fails.", %{proj: proj} do
+  test "Poll on a pending (waiting) PR status. Then wait if CI fails.", %{proj: proj} do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
@@ -1091,8 +1091,8 @@ defmodule BorsNG.Worker.BatcherTest do
                commits: %{},
                comments: %{
                  1 => [
-                   ":-1: Rejected by PR status",
-                   ":clock1: Waiting for PR status (GitHub check) to be set, probably by CI. Bors will automatically try to run when all required PR statuses are set."
+                   "GitHub status checks took too long to complete, so bors is giving up. You can adjust bors configuration to have it wait longer if you like.",
+                   ":clock1: Waiting for the PR to be ready to merge."
                  ]
                },
                statuses: %{"Z" => %{"cn" => :error}},
@@ -1166,7 +1166,7 @@ defmodule BorsNG.Worker.BatcherTest do
            }
   end
 
-  test "Poll on an unset PR status. Then reject after that CI fails.", %{proj: proj} do
+  test "Poll on an unset PR status. Then wait after that CI fails.", %{proj: proj} do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
@@ -1224,8 +1224,8 @@ defmodule BorsNG.Worker.BatcherTest do
                commits: %{},
                comments: %{
                  1 => [
-                   ":-1: Rejected by PR status",
-                   ":clock1: Waiting for PR status (GitHub check) to be set, probably by CI. Bors will automatically try to run when all required PR statuses are set."
+                   "GitHub status checks took too long to complete, so bors is giving up. You can adjust bors configuration to have it wait longer if you like.",
+                   ":clock1: Waiting for the PR to be ready to merge."
                  ]
                },
                statuses: %{
@@ -1410,7 +1410,7 @@ defmodule BorsNG.Worker.BatcherTest do
                branches: %{},
                commits: %{},
                comments: %{
-                 1 => [":-1: Rejected by code reviews"]
+                 1 => [":clock1: Waiting for the PR to be ready to merge."]
                },
                statuses: %{"Z" => %{"cn" => :ok}},
                files: %{"Z" => %{"bors.toml" => ~s/status = [ "ci" ]\nrequired_approvals = 0/}},
@@ -1419,7 +1419,7 @@ defmodule BorsNG.Worker.BatcherTest do
            }
   end
 
-  test "rejects an patch with a request for changes even if it also has approvals", %{proj: proj} do
+  test "waits for an patch with a request for changes even if it also has approvals", %{proj: proj} do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
@@ -1448,7 +1448,7 @@ defmodule BorsNG.Worker.BatcherTest do
                branches: %{},
                commits: %{},
                comments: %{
-                 1 => [":-1: Rejected by code reviews"]
+                 1 => [":clock1: Waiting for the PR to be ready to merge."]
                },
                statuses: %{"Z" => %{"cn" => :ok}},
                files: %{"Z" => %{"bors.toml" => ~s/status = [ "ci" ]\nrequired_approvals = 1/}},
@@ -1493,7 +1493,7 @@ defmodule BorsNG.Worker.BatcherTest do
            }
   end
 
-  test "rejects a patch with too few approved reviews", %{proj: proj} do
+  test "waits for a patch with too few approved reviews", %{proj: proj} do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
@@ -1530,7 +1530,7 @@ defmodule BorsNG.Worker.BatcherTest do
                branches: %{},
                commits: %{},
                comments: %{
-                 1 => [":-1: Rejected by too few approved reviews"]
+                 1 => [":clock1: Waiting for the PR to be ready to merge."]
                },
                statuses: %{"Z" => %{"cn" => :ok}},
                files: %{
@@ -1550,7 +1550,7 @@ defmodule BorsNG.Worker.BatcherTest do
     assert [] == Repo.all(Batch)
   end
 
-  test "rejects a patch with too few up-to-date approved reviews", %{proj: proj} do
+  test "waits for a patch with too few up-to-date approved reviews", %{proj: proj} do
     GitHub.ServerMock.put_state(%{
       {{:installation, 91}, 14} => %{
         branches: %{},
@@ -1590,7 +1590,7 @@ defmodule BorsNG.Worker.BatcherTest do
                commits: %{},
                comments: %{
                  1 => [
-                   ":-1: Rejected by too few up-to-date approved reviews (some of the PR reviews are stale)"
+                   ":clock1: Waiting for the PR to be ready to merge."
                  ]
                },
                statuses: %{"Z" => %{"cn" => :ok}},
