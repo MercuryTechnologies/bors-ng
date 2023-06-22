@@ -1045,18 +1045,12 @@ defmodule BorsNG.Worker.Batcher do
         :sufficient
       end
 
-    draft =
-      case GitHub.get_pr(repo_conn, patch.pr_xref) do
-        {:ok, pr} -> pr.draft
-        _ -> false
-      end
-
     Logger.info(
-      "Code review status: Label Check #{passed_label} Passed Status: #{no_error_status and no_waiting_status and no_unset_status} Passed Review: #{passed_review} CODEOWNERS: #{code_owners_approved} Passed Up-To-Date Review: #{passed_up_to_date_review} Not Draft: #{!draft}"
+      "Code review status: Label Check #{passed_label} Passed Status: #{no_error_status and no_waiting_status and no_unset_status} Passed Review: #{passed_review} CODEOWNERS: #{code_owners_approved} Passed Up-To-Date Review: #{passed_up_to_date_review} Not Draft: #{!patch.is_draft}"
     )
 
     case {passed_label, no_error_status, no_waiting_status, no_unset_status, passed_review,
-          code_owners_approved, passed_up_to_date_review, !draft} do
+          code_owners_approved, passed_up_to_date_review, !patch.is_draft} do
       {true, true, true, true, :sufficient, true, :sufficient, true} -> {:ok, toml.max_batch_size}
       {false, _, _, _, _, _, _, _} -> {:error, :blocked_labels}
       {_, _, _, _, _, _, _, _} -> :waiting
